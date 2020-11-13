@@ -2,15 +2,20 @@ package com.sty.ne.jetpack.room;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.sty.ne.jetpack.room.adapter.MyAdapter;
 import com.sty.ne.jetpack.room.bean.Student;
 import com.sty.ne.jetpack.room.db.StudentDao;
 import com.sty.ne.jetpack.room.db.StudentDatabase;
+import com.sty.ne.jetpack.room.viewmodel.StudentViewModel;
 
 import java.util.List;
 
@@ -20,9 +25,9 @@ public class MainActivity extends AppCompatActivity {
     private Button btnUpdate;
     private Button btnClear;
     private Button btnDelete;
-
-    private StudentDatabase studentDatabase;
-    private StudentDao studentDao;
+    private RecyclerView recyclerView;
+    private MyAdapter myAdapter;
+    private StudentViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,24 +44,20 @@ public class MainActivity extends AppCompatActivity {
         btnUpdate = findViewById(R.id.btn_update);
         btnClear = findViewById(R.id.btn_clear);
         btnDelete = findViewById(R.id.btn_delete);
+        recyclerView = findViewById(R.id.recycler_view);
 
-        studentDatabase = StudentDatabase.getInstance(this);
-        studentDao = studentDatabase.getStudentDao();
+        myAdapter = new MyAdapter();
+        viewModel = new ViewModelProvider(this,
+                new ViewModelProvider.AndroidViewModelFactory(getApplication())).get(StudentViewModel.class);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(myAdapter);
 
-        //观察数据的变化
-        studentDao.getAllStudentLiveData().observe(this, new Observer<List<Student>>() {
+        //观察数据变化
+        viewModel.getAllStudentLive().observe(this, new Observer<List<Student>>() {
             @Override
             public void onChanged(List<Student> students) {
-                StringBuilder sb = new StringBuilder();
-                for (Student student : students) {
-                    sb.append(student.getId())
-                            .append(":")
-                            .append(student.getName())
-                            .append("==")
-                            .append(student.getAge())
-                            .append("\n");
-                }
-                tvInfo.setText(sb.toString());
+                myAdapter.setAllStudents(students);
+                myAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -68,9 +69,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Student student1 = new Student("张三", 20);
                 Student student2 = new Student("李四", 30);
-                studentDao.insertStudents(student1, student2);
 
-                //updateView();
+                viewModel.insert(student1, student2);
             }
         });
 
@@ -79,18 +79,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Student student = new Student("AAA", 1233);
                 student.setId(2); //更新Id 为2的这条数据
-                studentDao.updateStudents(student);
 
-                //updateView();
+                viewModel.update(student);
             }
         });
 
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                studentDao.deleteAllStudents();
-
-                //updateView();
+                viewModel.clear();
             }
         });
 
@@ -99,28 +96,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Student student = new Student();
                 student.setId(1); //删除ID为1的记录
-                studentDao.deleteStudents(student);
 
-                //updateView();
+                viewModel.delete(student);
             }
         });
     }
-
-    /**
-     * 刷新UI
-     * 把数据库中的内容显示到TextView
-     */
-//    private void updateView() {
-//        List<Student> students = studentDao.getAllStudents();
-//        StringBuilder sb = new StringBuilder();
-//        for (Student student : students) {
-//            sb.append(student.getId())
-//                    .append(":")
-//                    .append(student.getName())
-//                    .append("==")
-//                    .append(String.valueOf(student.getAge()))
-//                    .append("\n");
-//        }
-//        tvInfo.setText(sb.toString());
-//    }
 }

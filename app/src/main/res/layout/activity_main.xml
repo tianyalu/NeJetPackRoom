@@ -10,7 +10,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:visibility="visible">
+        android:visibility="gone">
         <TextView
             android:id="@+id/tv_info"
             android:layout_width="match_parent"
@@ -23,6 +23,11 @@
             android:textColor="@android:color/black"
             android:textSize="20dp"/>
     </ScrollView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"

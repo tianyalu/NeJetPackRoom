@@ -25,7 +25,7 @@ public abstract class StudentDatabase extends RoomDatabase {
                     //默认只能在异步线程中运行，如果在主线程执行就会报错
                     studentDatabase = Room.databaseBuilder(context.getApplicationContext(),
                                 StudentDatabase.class, "student_database")
-                            .allowMainThreadQueries() //强制允许在main线程执行
+                            //.allowMainThreadQueries() //强制允许在main线程执行（不建议这样做，尽量在异步线程操作数据库）
                             .build();
                 }
             }
